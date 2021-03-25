@@ -14,19 +14,13 @@ session = DBSession()
 def process_order(order):
     
     #1. Insert the order into the database
-    #      – Make sure the user with a given pk exists in the “user” table
     #      – Insert the order into the “order” table. Make sure you set the following fields:
-    #           “buy_currency”
-    #           “sell_currency”
-    #           “buy_amount”
-    #           “sell_amount”
-    #           “sender_pk”
-    #           “receiver_pk”
-    fields = ['sender_pk','receiver_pk','buy_currency','sell_currency','buy_amount','sell_amount']
-    print(fields)
-    order_obj = Order(**{f:order[f] for f in fields})
+    order_obj = Order( sender_pk=order['sender_pk'],receiver_pk=order['receiver_pk'], buy_currency=order['buy_currency'], sell_currency=order['sell_currency'], buy_amount=order['buy_amount'], sell_amount=order['sell_amount'] )
     session.add(order_obj)
     session.commit()
+    print(order_obj.filled)
+    
+    
 
     #2. Check if there are any existing orders that match. Given new_order and existing order, \
     #   to match all of the following requirements must be fulfilled:
