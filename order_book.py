@@ -41,14 +41,18 @@ def match_order(existing_order, order):
     order.counterparty_id = existing_order.id
     if (existing_order.sell_amount < order.buy_amount):
         #print("\n current: SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency + " / BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
+        remaining_buy_amt = order.buy_amount - existing_order.sell_amount
+        remaining_sell_amt = order.sell_amount - existing_order.buy_amount
+        if(remaining_buy_amt | remaining_sell_amt == 0):
+            return 0
         derived_order = Order (
             creator_id=order.id, 
             sender_pk=order.sender_pk,
             receiver_pk=order.receiver_pk, 
             buy_currency=order.buy_currency, 
             sell_currency=order.sell_currency, 
-            buy_amount=order.buy_amount - existing_order.sell_amount, 
-            sell_amount=order.sell_amount - existing_order.buy_amount )
+            buy_amount=remaining_buy_amt, 
+            sell_amount= remaining_sell_amt)
         derived_order.timestamp = datetime.now()
         derived_order.relationship = (derived_order.id, order.id)
         session.add(derived_order)
