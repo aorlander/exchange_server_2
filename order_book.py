@@ -8,12 +8,34 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-#Your solution should be in a file called ‘order_book.py’ and it should 
-#contain a method 'process_order(order)'. The function ‘process_order’ 
-#takes a single argument, a dictionary object containing the 6 fields above.
+
+def match_order(existing_order, current_order):
+    remaining_sell_amount = current_order.sell_amount - existing_order.buy_amount
+    remaining_buy_amount = current_order.buy_amount - existing_order.sell_amount
+    child_order = Order (
+        creator_id=current_order.id, 
+        sender_pk=current_order.sender_pk,
+        receiver_pk=current_order.receiver_pk, 
+        buy_currency=current_order.buy_currency, 
+        sell_currency=current_order.sell_currency, 
+        buy_amount=remaining_buy_amount, 
+        sell_amount=remaining_sell_amount )
+    child_order.timestamp = datetime.now()
+    child_order.relationship = (child_order.id, current_order.id)
+    current_order.relationship = (child_order.id, current_order.id)
+    session.add(child_order)
+    session.commit()
+    #print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
+    existing_order.counterparty_id = current_order.id
+    existing_order.filled = current_order.timestamp #or does this mean NOW?
+    current_order.counterparty_id = existing_order.id
+    current_order.filled = current_order.timestamp
+    return child_order
+
+#Your solution should be in a file called ‘order_book.py’ and it should contain a method 'process_order(order)'. The function ‘process_order’ takes a single argument, a dictionary object containing the 6 fields above.
 def process_order(order):
     
-    #1. Insert the order into the database. Insert the order into the “order” table. Make sure you set the following fields:
+    #1. Insert the order into the database. 
     current_order = Order( sender_pk=order['sender_pk'], receiver_pk=order['receiver_pk'], buy_currency=order['buy_currency'], sell_currency=order['sell_currency'], buy_amount=order['buy_amount'], sell_amount=order['sell_amount'])
     current_order.timestamp = datetime.now()
     session.add(current_order)
@@ -28,48 +50,7 @@ def process_order(order):
     #      5) The implied exchange rate of the new order must be at least that of the existing order (existing_order.sell_amount / existing_order.buy_amount >= order.buy_amount/order.sell_amount)
     #      6) The buy / sell amounts need not match exactly
     #      7) Each order should match at most one other
-    #print("\n current: SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency + " / BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
-
-    for existing_order in session.query(Order).filter(Order.filled == None):
-        if(current_order.filled==None): 
-            if(existing_order.buy_currency == current_order.sell_currency):
-                if(existing_order.sell_currency == current_order.buy_currency):
-                    if(existing_order.sell_amount / existing_order.buy_amount >= current_order.buy_amount/current_order.sell_amount):
-                        if (existing_order.sell_amount < current_order.buy_amount):
-                            #print("existing SELL " + str(existing_order.sell_amount) + " " + existing_order.sell_currency + " / current BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
-                            #print("existing BUY " + str(existing_order.buy_amount) + " " + existing_order.buy_currency + " / current SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency)
-                            remaining_sell_amount = current_order.sell_amount - existing_order.buy_amount
-                            remaining_buy_amount = current_order.buy_amount - existing_order.sell_amount
-                            child_order = Order (
-                                creator_id=current_order.id, 
-                                sender_pk=current_order.sender_pk,
-                                receiver_pk=current_order.receiver_pk, 
-                                buy_currency=current_order.buy_currency, 
-                                sell_currency=current_order.sell_currency, 
-                                buy_amount=remaining_buy_amount, 
-                                sell_amount=remaining_sell_amount )
-                            child_order.timestamp = datetime.now()
-                            child_order.relationship = (child_order.id, current_order.id)
-                            current_order.relationship = (child_order.id, current_order.id)
-                            session.add(child_order)
-                            session.commit()
-                            #print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
-
-                            existing_order.counterparty_id = current_order.id
-                            existing_order.filled = current_order.timestamp #or does this mean NOW?
-                            current_order.counterparty_id = existing_order.id
-                            current_order.filled = current_order.timestamp
-
-    #print("ALL: ")
-    #for o in session.query(Order):
-    #    print(str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " ( " + str(o.creator_id) + " )")
-    #print("FILLED: ")
-    #for o in session.query(Order).filter(Order.filled != None):
-    #    print(str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " ( " + str(o.creator_id) + " )")
-
-                        
-                        
-
+                       
     #3. If a match is found between order and existing_order:
     #      – Set the filled field to be the current timestamp on both orders
     #      – Set counterparty_id to be the id of the other order
@@ -83,6 +64,34 @@ def process_order(order):
     # -Each order matches at most one other (to match one order against multiple others create derivative orders, and set the “created_by” field as described above)
     # -Any derived orders must have an implied exchange rate that is at least the original exchange rate, i.e., buy_amount/sell_amount on the new order must be at least the buy_amount/sell_amount on the order that created it
 
+
+    #print("\n current: SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency + " / BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
+
+    for existing_order in session.query(Order).filter(Order.filled == None):
+        if(current_order.filled==None): 
+            if(existing_order.buy_currency == current_order.sell_currency):
+                if(existing_order.sell_currency == current_order.buy_currency):
+                    if(existing_order.sell_amount / existing_order.buy_amount >= current_order.buy_amount/current_order.sell_amount):
+                        if (existing_order.sell_amount < current_order.buy_amount):
+                            #print("match new order")
+                            match_order(existing_order, current_order)
+   
+    for derived_order in session.query(Order).filter(Order.creator_id != None):
+        if (derived_order.filled == None):
+            for existing_order in session.query(Order).filter(Order.filled == None):
+                if(existing_order.buy_currency == derived_order.sell_currency):
+                    if(existing_order.sell_currency == derived_order.buy_currency):
+                        if(existing_order.sell_amount / existing_order.buy_amount >= derived_order.buy_amount/derived_order.sell_amount):
+                            if (existing_order.sell_amount < derived_order.buy_amount):
+                                #print("match derived order")
+                                match_order(existing_order, derived_order)
+
+    #for o in session.query(Order):
+    #    if o.filled == None:
+    #        print("NOT Filled --- " + str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " (created by " + str(o.creator_id) + " )")
+    #    if o.filled != None:
+    #        print("Filled ------- " + str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " (created by " + str(o.creator_id)  + " )")      
+ 
 
     #DB should provide a complete history of all orders submitted and filled - do not delete filled orders; create derived orders with creator_id
     
