@@ -8,6 +8,57 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+def calc_net_profits():
+    print(" ")
+    eth_in = 0
+    eth_out = 0
+    algo_in = 0
+    algo_out = 0
+    orders = session.query(Order).filter(Order.filled != "").all()
+    for order in orders:
+        if order.sell_currency == "Algorand":
+            algo_in += order.sell_amount 
+            algo_out += order.counterparty[0].buy_amount
+            if order.counterparty[0].child:
+                algo_out -= order.counterparty[0].child[0].buy_amount
+            if order.child:
+                algo_in -= order.child[0].sell_amount
+        if order.sell_currency == "Ethereum":
+            eth_in += order.sell_amount
+            eth_out += order.counterparty[0].buy_amount 
+            if order.counterparty[0].child:
+                eth_out -= order.counterparty[0].child[0].buy_amount
+            if order.child:
+                eth_in -= order.child[0].sell_amount
+    print( f"Eth profits = {eth_in-eth_out:.2f}" )
+    print( f"Algo profits = {algo_in-algo_out:.2f}" )
+    return 0
+
+def calc_net_deposits():
+    algo_total_in = sum( [order.sell_amount for order in session.query(Order).filter(Order.creator == None).all() if order.sell_currency == "Algorand" ] )
+    eth_total_in = sum( [order.sell_amount for order in session.query(Order).filter(Order.creator == None).all() if order.sell_currency == "Ethereum" ] )
+    algo_unfilled_in = sum( [order.sell_amount for order in session.query(Order).filter(Order.filled == None).all() if order.sell_currency == "Algorand" ] )
+    eth_unfilled_in = sum( [order.sell_amount for order in session.query(Order).filter(Order.filled == None).all() if order.sell_currency == "Ethereum" ] )
+    print( f"Eth in = {eth_total_in-eth_unfilled_in:.2f}" )
+    print( f"Algo in = {algo_total_in-algo_unfilled_in:.2f}" )
+    return 0
+
+def payouts_from_exchange():
+    eth_out = 0
+    algo_out = 0
+    orders = session.query(Order).filter(Order.filled != "").all() #Get all filled orders
+    for order in orders:
+        if order.sell_currency == "Algorand":
+            eth_out += order.counterparty[0].buy_amount
+            if order.counterparty[0].child:
+                eth_out -= order.counterparty[0].child[0].buy_amount
+        if order.sell_currency == "Ethereum":
+            algo_out += order.counterparty[0].buy_amount
+            if order.counterparty[0].child:
+                algo_out -= order.counterparty[0].child[0].buy_amount
+    print( f"Eth out = {eth_out:.2f}" )
+    print( f"Algo out = {algo_out:.2f}" )
+    return 0
 
 # Check if there are any existing orders that match. Given new_order and existing order, to match all of the following requirements must be fulfilled:
 #      1) existing_order.filled must be None

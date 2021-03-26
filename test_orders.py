@@ -39,3 +39,13 @@ for i in range(num_orders):
     process_order(order_dict)
 bar.finish()
 
+
+
+from order_book import calc_net_deposits
+from order_book import calc_net_profits
+from order_book import payouts_from_exchange
+
+
+calc_net_deposits()
+payouts_from_exchange()
+calc_net_profits()
