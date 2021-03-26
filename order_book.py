@@ -28,7 +28,7 @@ def process_order(order):
     #      5) The implied exchange rate of the new order must be at least that of the existing order (existing_order.sell_amount / existing_order.buy_amount >= order.buy_amount/order.sell_amount)
     #      6) The buy / sell amounts need not match exactly
     #      7) Each order should match at most one other
-    print("\n current: SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency + " / BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
+    #print("\n current: SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency + " / BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
 
     for existing_order in session.query(Order).filter(Order.filled == None):
         if(current_order.filled==None): 
@@ -36,8 +36,8 @@ def process_order(order):
                 if(existing_order.sell_currency == current_order.buy_currency):
                     if(existing_order.sell_amount / existing_order.buy_amount >= current_order.buy_amount/current_order.sell_amount):
                         if (existing_order.sell_amount < current_order.buy_amount):
-                            print("existing SELL " + str(existing_order.sell_amount) + " " + existing_order.sell_currency + " / current BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
-                            print("existing BUY " + str(existing_order.buy_amount) + " " + existing_order.buy_currency + " / current SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency)
+                            #print("existing SELL " + str(existing_order.sell_amount) + " " + existing_order.sell_currency + " / current BUY " + str(current_order.buy_amount) + " " + current_order.buy_currency)
+                            #print("existing BUY " + str(existing_order.buy_amount) + " " + existing_order.buy_currency + " / current SELL " + str(current_order.sell_amount) + " " + current_order.sell_currency)
                             remaining_sell_amount = current_order.sell_amount - existing_order.buy_amount
                             remaining_buy_amount = current_order.buy_amount - existing_order.sell_amount
                             child_order = Order (
@@ -53,19 +53,19 @@ def process_order(order):
                             current_order.relationship = (child_order.id, current_order.id)
                             session.add(child_order)
                             session.commit()
-                            print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
+                            #print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
 
                             existing_order.counterparty_id = current_order.id
                             existing_order.filled = current_order.timestamp #or does this mean NOW?
                             current_order.counterparty_id = existing_order.id
                             current_order.filled = current_order.timestamp
 
-    print("ALL: ")
-    for o in session.query(Order):
-        print(str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " ( " + str(o.creator_id) + " )")
-    print("FILLED: ")
-    for o in session.query(Order).filter(Order.filled != None):
-        print(str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " ( " + str(o.creator_id) + " )")
+    #print("ALL: ")
+    #for o in session.query(Order):
+    #    print(str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " ( " + str(o.creator_id) + " )")
+    #print("FILLED: ")
+    #for o in session.query(Order).filter(Order.filled != None):
+    #    print(str(o.id) + ": SELL " + str(o.sell_amount) + " " + o.sell_currency + " / BUY " + str(o.buy_amount) + " " + o.buy_currency + " ( " + str(o.creator_id) + " )")
 
                         
                         
