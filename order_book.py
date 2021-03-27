@@ -115,7 +115,7 @@ def match_order(existing_order, order):
         remaining_buy_amt = order.buy_amount - existing_order.sell_amount
         remaining_sell_amt = order.sell_amount - existing_order.buy_amount
         derived_implied_fx=remaining_buy_amt/remaining_sell_amt
-        print("\n order FX = " + str(parent_implied_fx)  + " // existing FX = " + str(existing_implied_fx) + " // derived FX = " + str(derived_implied_fx))
+        #print("\n order FX = " + str(parent_implied_fx)  + " // existing FX = " + str(existing_implied_fx) + " // derived FX = " + str(derived_implied_fx))
         derived_order = Order (
             creator_id=order.id, 
             sender_pk=order.sender_pk,
