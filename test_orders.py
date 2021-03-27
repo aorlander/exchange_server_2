@@ -44,8 +44,9 @@ bar.finish()
 from order_book import calc_net_deposits
 from order_book import calc_net_profits
 from order_book import payouts_from_exchange
+from order_book import list_orders
 
-
-calc_net_deposits()
-payouts_from_exchange()
+#calc_net_deposits()
+#payouts_from_exchange()
 calc_net_profits()
+list_orders()
