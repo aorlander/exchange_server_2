@@ -29,7 +29,7 @@ def make_order(platform):
 from order_book import process_order
 
 order_list = [] 
-num_orders=100
+num_orders=20
 bar = progressbar.ProgressBar(max_value=num_orders, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
 for i in range(num_orders):
     bar.update(i+1)
@@ -49,5 +49,5 @@ from order_book import list_orders
 #calc_net_deposits()
 #payouts_from_exchange()
 
-#list_orders()
-#calc_net_profits()
+list_orders()
+calc_net_profits()

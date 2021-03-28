@@ -39,20 +39,30 @@ def calc_net_profits():
     for order in orders:
         if order.sell_currency == "Algorand":
             algo_in += order.sell_amount 
+            #print("Algo in = " + str(algo_in)
             algo_out += order.counterparty[0].buy_amount
             if order.counterparty[0].child:
                 algo_out -= order.counterparty[0].child[0].buy_amount
+                #print("Algo out on order.child = " + str(algo_out)
             if order.child:
                 algo_in -= order.child[0].sell_amount
+                #print("Algo in on order.child = " + str(algo_in)
         if order.sell_currency == "Ethereum":
             eth_in += order.sell_amount
+            #print("Eth in = " + str(eth_in)
             eth_out += order.counterparty[0].buy_amount 
+            #print("Eth out on counterparty = " + str(eth_out)
             if order.counterparty[0].child:
                 eth_out -= order.counterparty[0].child[0].buy_amount
+                #print("Eth out on order.child = " + str(eth_out)
             if order.child:
                 eth_in -= order.child[0].sell_amount
-    print( f"Eth profits = {eth_in-eth_out:.2f}" )
-    print( f"Algo profits = {algo_in-algo_out:.2f}" )
+                #print("Eth in on order.child = " + str(eth_in)
+
+    print("Eth in = " + str(eth_in) + ", Eth out = " + str(eth_out) + ", Eth profits = " + str(eth_in-eth_out))
+    print("Algo in = " + str(algo_in) + ", Algo out = " + str(algo_out) + ", Algo profits = " + str(algo_in-algo_out))
+    #print( f"Eth profits = {eth_in-eth_out:.2f}" )
+    #print( f"Algo profits = {algo_in-algo_out:.2f}" )
     return 0
 
 def calc_net_deposits():
@@ -106,13 +116,13 @@ def check_match(existing_order, order):
 #     -The sell_amount of the new order can be any value such that the implied exchange rate of the new order is at least that of the old order (i.e., B/S on the new order must be at least the B/S on the order that created it)
 #     -You can then try to fill the new order
 def match_order(existing_order, order):
-    existing_order.filled = order.timestamp 
-    order.filled = order.timestamp
-    existing_order.counterparty_id = order.id
-    order.counterparty_id = existing_order.id
-    existing_implied_fx=existing_order.buy_amount/existing_order.sell_amount
-    parent_implied_fx= order.buy_amount/order.sell_amount
     if (existing_order.sell_amount < order.buy_amount):
+        existing_order.filled = order.timestamp 
+        order.filled = order.timestamp
+        existing_order.counterparty_id = order.id
+        order.counterparty_id = existing_order.id
+        existing_implied_fx=existing_order.buy_amount/existing_order.sell_amount
+        parent_implied_fx= order.buy_amount/order.sell_amount
         #print("\n current: SELL " + str(order.sell_amount) + " " + order.sell_currency + " / BUY " + str(order.buy_amount) + " " + order.buy_currency)
         remaining_buy_amt = order.buy_amount - existing_order.sell_amount
         remaining_sell_amt = order.sell_amount - existing_order.buy_amount
@@ -130,6 +140,9 @@ def match_order(existing_order, order):
         derived_order.relationship = (derived_order.id, order.id)
         session.add(derived_order)
         session.commit()
+        print("\n existing: SELL " + str(existing_order.sell_amount) + " " + existing_order.sell_currency + " / BUY " + str(existing_order.buy_amount) + " " + existing_order.buy_currency)
+        print("\n match with current: SELL " + str(order.sell_amount) + " " + order.sell_currency + " / BUY " + str(order.buy_amount) + " " + order.buy_currency)
+        print("\n child: SELL " + str(derived_order.sell_amount) + " " + derived_order.sell_currency + " / BUY " + str(derived_order.buy_amount) + " " + derived_order.buy_currency)
         #print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
     return 0
 
@@ -144,4 +157,5 @@ def process_order(order):
     for existing_order in session.query(Order).filter(Order.filled == None):
         if(check_match(existing_order, current_order)==True):
             match_order(existing_order, current_order)
+    #calc_net_profits()
     pass
