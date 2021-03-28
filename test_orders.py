@@ -43,5 +43,5 @@ bar.finish()
 from order_book import calc_net_profits
 from order_book import list_orders
 
-list_orders()
-calc_net_profits()
+#list_orders()
+#calc_net_profits()

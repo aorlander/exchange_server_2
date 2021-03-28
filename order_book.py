@@ -107,7 +107,7 @@ def get_optimal_match(order):
 
 def match_order(existing_order, order):
     if (existing_order.sell_amount < order.buy_amount):
-        print("\nMATCH : " + str(order.id) + " with " + str(existing_order.id) )
+        #print("\nMATCH : " + str(order.id) + " with " + str(existing_order.id) )
         existing_implied_fx=existing_order.buy_amount/existing_order.sell_amount
         parent_implied_fx= order.buy_amount/order.sell_amount
         remaining_sell_amt = order.sell_amount - existing_order.buy_amount
@@ -128,7 +128,7 @@ def match_order(existing_order, order):
         order.filled = order.timestamp
         existing_order.counterparty_id = order.id
         order.counterparty_id = existing_order.id
-        print("created: SELL " + str(derived_order.sell_amount) + " " + derived_order.sell_currency + " / BUY " + str(derived_order.buy_amount) + " " + derived_order.buy_currency)
+        #print("created: SELL " + str(derived_order.sell_amount) + " " + derived_order.sell_currency + " / BUY " + str(derived_order.buy_amount) + " " + derived_order.buy_currency)
     return 0
 
 def process_order(order):
