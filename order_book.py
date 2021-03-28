@@ -8,6 +8,9 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+session.query(Order).delete()
+session.commit()
+
 def list_orders():
     orders = session.query(Order).all()
     for o in session.query(Order):
