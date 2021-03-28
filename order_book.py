@@ -140,9 +140,9 @@ def match_order(existing_order, order):
         derived_order.relationship = (derived_order.id, order.id)
         session.add(derived_order)
         session.commit()
-        print("\n existing: SELL " + str(existing_order.sell_amount) + " " + existing_order.sell_currency + " / BUY " + str(existing_order.buy_amount) + " " + existing_order.buy_currency)
-        print("\n match with current: SELL " + str(order.sell_amount) + " " + order.sell_currency + " / BUY " + str(order.buy_amount) + " " + order.buy_currency)
-        print("\n child: SELL " + str(derived_order.sell_amount) + " " + derived_order.sell_currency + " / BUY " + str(derived_order.buy_amount) + " " + derived_order.buy_currency)
+        #print("\n existing: SELL " + str(existing_order.sell_amount) + " " + existing_order.sell_currency + " / BUY " + str(existing_order.buy_amount) + " " + existing_order.buy_currency)
+        #print("\n match with current: SELL " + str(order.sell_amount) + " " + order.sell_currency + " / BUY " + str(order.buy_amount) + " " + order.buy_currency)
+        #print("\n child: SELL " + str(derived_order.sell_amount) + " " + derived_order.sell_currency + " / BUY " + str(derived_order.buy_amount) + " " + derived_order.buy_currency)
         #print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
     return 0
 
